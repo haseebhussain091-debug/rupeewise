@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rupee — Personal Finance</title>
+<style>
+:root {
+  --site-primary: #246b57;
+  --site-on-primary: #ffffff;
+  --site-secondary: #e2eee8;
+  --site-on-secondary: #193e33;
+  --site-background: #f4f7f4;
+  --site-on-background: #172a24;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  --surface: light-dark(#ffffff, #1c2723);
+  --surface-soft: light-dark(#f6f9f6, #222f2a);
+  --text: light-dark(#172a24, #e8f1ec);
+  --muted: light-dark(#718079, #a6b8ae);
+  --border: light-dark(#e4ebe6, #35443d);
+  --green: #246b57;
+  --red: #c45858;
+}
+* { box-sizing: border-box; }
+body { margin: 0; font-family: var(--site-font-body); color: var(--text); background: var(--site-background); }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); border-radius: 0; color: var(--site-on-background); }
+.layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); min-height: 100vh; }
+.sidebar { background: var(--site-primary); color: var(--site-on-primary); padding: calc(26px * var(--site-spacing-scale)) 16px; display:flex; flex-direction:column; gap:28px; }
+.brand { display:flex; align-items:center; gap:11px; padding:0 9px; font-weight:800; letter-spacing:-.5px; font-size:21px; }
+.brand-mark { width:36px; height:36px; border-radius:12px; background:var(--site-secondary); color:var(--site-on-secondary); display:grid; place-items:center; font-size:20px; }
+.nav-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; opacity:.65; padding:0 12px; margin-bottom:9px; }
+.nav { display:grid; gap:5px; }
+.nav button { display:flex; align-items:center; gap:12px; border:0; border-radius:12px; color:inherit; background:transparent; padding:12px; text-align:left; opacity:.82; }
+.nav button.active, .nav button:hover { background:rgba(255,255,255,.16); opacity:1; }
+.nav .ico { width:20px; text-align:center; font-size:17px; }
+.sidebar-bottom { margin-top:auto; border:1px solid rgba(255,255,255,.22); border-radius:15px; padding:14px; font-size:12px; line-height:1.6; color:rgba(255,255,255,.82); }
+.sidebar-bottom strong { display:block; color:white; font-size:13px; margin-bottom:4px; }
+main { min-width:0; padding:30px clamp(16px, 3.2vw, 46px) 50px; }
+.topbar { display:flex; align-items:center; justify-content:space-between; gap:15px; margin-bottom:30px; }
+.eyebrow { color:var(--muted); font-size:12px; font-weight:650; letter-spacing:.7px; text-transform:uppercase; }
+h1 { font-family:var(--site-font-heading); font-size:calc(30px * var(--site-heading-scale)); letter-spacing:-1.1px; margin:5px 0 0; line-height:1.2; }
+h2 { font-size:calc(17px * var(--site-heading-scale)); margin:0; letter-spacing:-.35px; }
+.sub { color:var(--muted); font-size:13px; margin-top:7px; }
+.top-actions { display:flex; align-items:center; gap:10px; }
+.month-select, .secondary-btn, .primary-btn { border:1px solid var(--border); border-radius:11px; background:var(--surface); color:var(--text); padding:10px 13px; font-size:13px; }
+.primary-btn { background:var(--site-primary); border-color:var(--site-primary); color:var(--site-on-primary); font-weight:700; }
+.primary-btn:hover { filter:brightness(1.08); }
+.secondary-btn:hover { background:var(--surface-soft); }
+.cards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-bottom:20px; }
+.metric { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:20px; min-width:0; }
+.metric-top { display:flex; justify-content:space-between; align-items:center; gap:8px; color:var(--muted); font-size:12px; }
+.metric-icon { width:32px; height:32px; border-radius:10px; background:var(--site-secondary); color:var(--site-on-secondary); display:grid; place-items:center; font-size:16px; }
+.metric-value { font-size:clamp(20px,2vw,27px); font-weight:800; letter-spacing:-.8px; margin:17px 0 7px; overflow-wrap:anywhere; }
+.metric-foot { font-size:11px; color:var(--muted); }
+.positive { color:var(--green); font-weight:700; }
+.negative { color:var(--red); font-weight:700; }
+.main-grid { display:grid; grid-template-columns:minmax(0,1.35fr) minmax(260px,.8fr); gap:18px; align-items:start; }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:22px; min-width:0; margin-bottom:18px; }
+.panel-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:20px; }
+.panel-head p { margin:5px 0 0; color:var(--muted); font-size:12px; }
+.text-btn { color:var(--green); background:none; border:0; font-weight:700; font-size:12px; }
+.chart-wrap { height:175px; width:100%; }
+.chart-wrap svg { width:100%; height:100%; overflow:visible; }
+.legend { display:flex; gap:18px; color:var(--muted); font-size:11px; }
+.legend span { display:flex; align-items:center; gap:6px; }
+.dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+.saving-box { background:var(--site-secondary); color:var(--site-on-secondary); border-radius:15px; padding:17px; }
+.saving-head { display:flex; justify-content:space-between; font-size:12px; align-items:center; }
+.saving-big { font-size:28px; font-weight:800; letter-spacing:-.7px; margin:8px 0; }
+.progress { height:7px; border-radius:9px; background:rgba(36,107,87,.15); overflow:hidden; margin:13px 0 8px; }
+.progress > div { height:100%; background:var(--site-primary); border-radius:9px; width:0%; transition:width .2s; }
+.small-muted { color:var(--muted); font-size:11px; }
+.table-wrap { overflow-x:auto; }
+table { border-collapse:collapse; width:100%; font-size:12px; white-space:nowrap; }
+th { text-align:left; color:var(--muted); font-weight:600; font-size:10px; text-transform:uppercase; letter-spacing:.65px; padding:0 9px 12px; }
+td { border-top:1px solid var(--border); padding:13px 9px; }
+td:last-child, th:last-child { text-align:right; }
+.item-cell { display:flex; align-items:center; gap:9px; }
+.item-icon { width:31px; height:31px; display:grid; place-items:center; border-radius:10px; background:var(--surface-soft); }
+.pill { display:inline-flex; border-radius:20px; padding:4px 8px; background:var(--surface-soft); color:var(--muted); font-size:10px; }
+.empty { color:var(--muted); text-align:center; padding:24px 8px; font-size:13px; }
+.page { display:none; }
+.page.active { display:block; }
+.form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.field { display:grid; gap:7px; min-width:0; }
+.field.full { grid-column:1/-1; }
+.field label { font-size:12px; font-weight:650; color:var(--muted); }
+.field input, .field select, .field textarea { width:100%; min-width:0; padding:12px; border:1px solid var(--border); background:var(--surface-soft); border-radius:10px; color:var(--text); outline:none; }
+.field input:focus, .field select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(36,107,87,.12); }
+.form-actions { display:flex; justify-content:flex-end; gap:9px; margin-top:18px; }
+.split { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.asset-value { font-size:23px; font-weight:800; margin-top:10px; }
+.asset-card { border:1px solid var(--border); background:var(--surface); border-radius:14px; padding:16px; }
+.asset-top { display:flex; justify-content:space-between; gap:8px; }
+.asset-actions { display:flex; gap:8px; margin-top:15px; }
+.asset-actions button { flex:1; padding:8px; }
+.notice { color:var(--muted); font-size:12px; line-height:1.65; }
+.toast { position:fixed; bottom:20px; right:20px; background:var(--text); color:var(--surface); padding:12px 16px; border-radius:12px; font-size:13px; opacity:0; transform:translateY(8px); transition:.2s; pointer-events:none; z-index:10; }
+.toast.show { opacity:1; transform:translateY(0); }
+@media(max-width:1050px) { .cards {grid-template-columns:repeat(2,minmax(0,1fr));} .main-grid {grid-template-columns:1fr;} }
+@media(max-width:650px) {
+ .layout {grid-template-columns:1fr;}
+ .sidebar {padding:12px; gap:12px; position:sticky; top:0; z-index:5;}
+ .brand {padding:0 4px; font-size:18px;}
+ .brand-mark {width:31px;height:31px;}
+ .nav-label,.sidebar-bottom {display:none;}
+ .nav {display:flex; overflow-x:auto; gap:4px;}
+ .nav button {flex:0 0 auto; padding:9px 11px; font-size:12px; gap:6px;}
+ main {padding:20px 14px 35px;}
+ .topbar {align-items:flex-start; flex-direction:column; margin-bottom:20px;}
+ .top-actions {width:100%;} .month-select {flex:1;}
+ .cards {gap:9px;} .metric {padding:14px;} .metric-value {font-size:20px;margin:12px 0 5px;}
+ .metric-top {font-size:11px;} .metric-icon {width:27px;height:27px;}
+ .panel {padding:16px; border-radius:15px;}
+ .split {grid-template-columns:1fr;}
+ .form-grid {grid-template-columns:1fr;} .field.full {grid-column:auto;}
+ h1 {font-size:26px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="layout">
+<aside class="sidebar">
+  <div class="brand"><span class="brand-mark">₨</span><span>rupee<span style="font-weight:500;opacity:.72">.wise</span></span></div>
+  <div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav" aria-label="Main navigation">
+      <button class="active" data-page="dashboard"><span class="ico">▦</span>Overview</button>
+      <button data-page="transactions"><span class="ico">⇄</span>Transactions</button>
+      <button data-page="assets"><span class="ico">◈</span>My assets</button>
+      <button data-page="insights"><span class="ico">◷</span>Insights</button>
+    </nav>
+  </div>
+  <div class="sidebar-bottom"><strong>🔒 Your money, your data</strong>Saved locally in this browser on this device. No bank connection or internet required.</div>
+</aside>
+<main>
+  <section class="page active" id="page-dashboard">
+    <div class="topbar">
+      <div><div class="eyebrow" id="todayLabel">PERSONAL FINANCE</div><h1>Your money, in focus.</h1><div class="sub">A clear picture of your income, spending and wealth.</div></div>
+      <div class="top-actions"><select id="monthFilter" class="month-select" aria-label="Select month"></select><button class="primary-btn" id="quickAdd">＋ Add transaction</button></div>
+    </div>
+    <div class="cards">
+      <div class="metric"><div class="metric-top">Total income <span class="metric-icon">↗</span></div><div class="metric-value" id="incomeTotal">Rs 0</div><div class="metric-foot">For selected month</div></div>
+      <div class="metric"><div class="metric-top">Total expenses <span class="metric-icon">↘</span></div><div class="metric-value" id="expenseTotal">Rs 0</div><div class="metric-foot">For selected month</div></div>
+      <div class="metric"><div class="metric-top">Net savings <span class="metric-icon">✳</span></div><div class="metric-value" id="savingTotal">Rs 0</div><div class="metric-foot" id="savingFoot">Income minus expenses</div></div>
+      <div class="metric"><div class="metric-top">Net worth <span class="metric-icon">◈</span></div><div class="metric-value" id="netWorth">Rs 0</div><div class="metric-foot">Assets minus liabilities</div></div>
+    </div>
+    <div class="main-grid">
+      <div>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Cash flow</h2><p>Income vs expenses over the last 6 months</p></div><span class="pill">PKR</span></div>
+          <div class="chart-wrap" id="cashChart"></div>
+          <div class="legend"><span><i class="dot" style="background:#246b57"></i>Income</span><span><i class="dot" style="background:#d9a45c"></i>Expenses</span></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Recent transactions</h2><p>Your latest money movements</p></div><button class="text-btn" data-goto="transactions">View all →</button></div>
+          <div class="table-wrap"><table><thead><tr><th>Transaction</th><th>Category</th><th>Date</th><th>Amount</th></tr></thead><tbody id="recentRows"></tbody></table></div>
+        </section>
+      </div>
+      <div>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Savings snapshot</h2><p>How much of your income you keep</p></div></div>
+          <div class="saving-box"><div class="saving-head"><span>Savings rate</span><strong id="savingRate">0%</strong></div><div class="saving-big" id="savingAmount">Rs 0</div><div class="progress"><div id="savingBar"></div></div><div class="small-muted" id="savingMessage">Add income and expenses to see your progress.</div></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Spending breakdown</h2><p>Where your money goes this month</p></div></div>
+          <div id="categoryBreakdown"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-head"><div><h2>Quick asset value</h2><p>Estimate the current value of what you own</p></div><button class="text-btn" data-goto="assets">Open →</button></div>
+          <div class="saving-big" id="assetQuickValue">Rs 0</div><div class="small-muted">Total current value of your assets</div>
+        </section>
+      </div>
+    </div>
+  </section>
+  <section class="page" id="page-transactions">
+    <div class="topbar"><div><div class="eyebrow">YOUR MONEY MOVEMENTS</div><h1>Transactions</h1><div class="sub">Record every rupee coming in or going out.</div></div><button class="primary-btn" id="newTransaction">＋ Add transaction</button></div>
+    <section class="panel" id="transactionFormPanel" hidden>
+      <div class="panel-head"><div><h2 id="transactionFormTitle">Add transaction</h2><p>Totals update automatically when you save.</p></div><button class="text-btn" id="closeTransaction">✕ Close</button></div>
+      <form id="transactionForm">
+        <div class="form-grid">
+          <div class="field"><label for="txType">Type</label><select id="txType" required><option value="expense">Expense</option><option value="income">Income</option></select></div>
+          <div class="field"><label for="txAmount">Amount (PKR)</label><input id="txAmount" type="number" min="0.01" step="0.01" placeholder="e.g. 2500" required></div>
+          <div class="field"><label for="txTitle">Description</label><input id="txTitle" maxlength="80" placeholder="e.g. Groceries, salary" required></div>
+          <div class="field"><label for="txCategory">Category</label><select id="txCategory"><option>Food</option><option>Transport</option><option>Education</option><option>Shopping</option><option>Bills</option><option>Health</option><option>Entertainment</option><option>Salary</option><option>Freelance</option><option>Business</option><option>Gift</option><option>Investment</option><option>Other</option></select></div>
+          <div class="field"><label for="txDate">Date</label><input id="txDate" type="date" required></div>
+          <div class="field"><label for="txNote">Note (optional)</label><input id="txNote" maxlength="160" placeholder="Add a short note"></div>
+        </div>
+        <div class="form-actions"><button type="button" class="secondary-btn" id="cancelTransaction">Cancel</button><button type="submit" class="primary-btn">Save transaction</button></div>
+      </form>
+    </section>
+    <section class="panel"><div class="panel-head"><div><h2>All transactions</h2><p id="txCount">0 entries</p></div><div style="display:flex;gap:8px;flex-wrap:wrap"><select id="txFilter" class="secondary-btn"><option value="all">All types</option><option value="income">Income only</option><option value="expense">Expenses only</option></select><button class="secondary-btn" id="exportCsv">Export CSV</button></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Transaction</th><th>Category</th><th>Date</th><th>Type</th><th>Amount</th><th>Action</th></tr></thead><tbody id="allRows"></tbody></table></div></section>
+  </section>
+  <section class="page" id="page-assets">
+    <div class="topbar"><div><div class="eyebrow">WHAT YOU OWN</div><h1>My assets</h1><div class="sub">Track your assets using estimated current values, not just purchase prices.</div></div><button class="primary-btn" id="newAsset">＋ Add asset</button></div>
+    <div class="cards">
+      <div class="metric"><div class="metric-top">Current asset value <span class="metric-icon">◈</span></div><div class="metric-value" id="assetTotal">Rs 0</div><div class="metric-foot">All assets at current value</div></div>
+      <div class="metric"><div class="metric-top">Original cost <span class="metric-icon">⌁</span></div><div class="metric-value" id="assetCost">Rs 0</div><div class="metric-foot">What you paid in total</div></div>
+      <div class="metric"><div class="metric-top">Value change <span class="metric-icon">↗</span></div><div class="metric-value" id="assetChange">Rs 0</div><div class="metric-foot">Current value minus cost</div></div>
+      <div class="metric"><div class="metric-top">Assets tracked <span class="metric-icon">☷</span></div><div class="metric-value" id="assetCount">0</div><div class="metric-foot">Items in your portfolio</div></div>
+    </div>
+    <section class="panel" id="assetFormPanel" hidden><div class="panel-head"><div><h2 id="assetFormTitle">Add an asset</h2><p>Enter what you paid and what you estimate it is worth today.</p></div><button class="text-btn" id="closeAsset">✕ Close</button></div>
+      <form id="assetForm"><div class="form-grid">
+        <div class="field"><label for="assetName">Asset name</label><input id="assetName" maxlength="80" placeholder="e.g. Gold, laptop, savings" required></div>
+        <div class="field"><label for="assetType">Asset category</label><select id="assetType"><option>Cash & savings</option><option>Gold & jewellery</option><option>Electronics</option><option>Vehicle</option><option>Property</option><option>Stocks & funds</option><option>Business</option><option>Collectibles</option><option>Other</option></select></div>
+        <div class="field"><label for="assetCostInput">Purchase cost (PKR)</label><input id="assetCostInput" type="number" min="0" step="0.01" placeholder="0" required></div>
+        <div class="field"><label for="assetCurrentInput">Estimated current value (PKR)</label><input id="assetCurrentInput" type="number" min="0" step="0.01" placeholder="0" required></div>
+        <div class="field"><label for="assetQty">Quantity (optional)</label><input id="assetQty" type="number" min="0" step="any" placeholder="e.g. 2"></div>
+        <div class="field"><label for="assetUnit">Unit (optional)</label><input id="assetUnit" maxlength="25" placeholder="e.g. grams, pieces"></div>
+        <div class="field full"><label for="assetNote">Notes (optional)</label><input id="assetNote" maxlength="160" placeholder="Purchase date, purity, model, or valuation note"></div>
+      </div><div class="form-actions"><button type="button" class="secondary-btn" id="cancelAsset">Cancel</button><button type="submit" class="primary-btn">Save asset</button></div></form>
+    </section>
+    <section class="panel"><div class="panel-head"><div><h2>Asset portfolio</h2><p>Update current estimates whenever market prices change.</p></div><button class="secondary-btn" id="exportAssets">Export CSV</button></div><div id="assetList" class="split"></div></section>
+    <section class="panel"><h2>Asset value calculator</h2><p class="sub" style="margin-bottom:18px">Estimate value from a quantity and a per-unit price. Useful for gold, foreign currency, shares or other assets.</p>
+      <div class="form-grid">
+        <div class="field"><label for="calcQty">Quantity</label><input id="calcQty" type="number" min="0" step="any" value="1"></div>
+        <div class="field"><label for="calcPrice">Price per unit (PKR)</label><input id="calcPrice" type="number" min="0" step="any" value="0"></div>
+        <div class="field"><label for="calcFee">Fees / costs (PKR)</label><input id="calcFee" type="number" min="0" step="any" value="0"></div>
+        <div class="field"><label for="calcAdjust">Adjustment (%)</label><input id="calcAdjust" type="number" step="any" value="0" placeholder="e.g. -5 or 3"></div>
+      </div>
+      <div class="saving-box" style="margin-top:17px"><div class="small-muted" style="color:inherit">Estimated total value</div><div class="saving-big" id="calcResult">Rs 0</div><div class="small-muted" style="color:inherit" id="calcDetail">Quantity × unit price, adjusted for percentage and costs.</div></div>
+    </section>
+  </section>
+  <section class="page" id="page-insights">
+    <div class="topbar"><div><div class="eyebrow">YOUR FINANCIAL PICTURE</div><h1>Insights</h1><div class="sub">Understand your saving habits and spending patterns.</div></div></div>
+    <div class="cards">
+      <div class="metric"><div class="metric-top">Income this month <span class="metric-icon">↗</span></div><div class="metric-value" id="insIncome">Rs 0</div><div class="metric-foot">Total recorded income</div></div>
+      <div class="metric"><div class="metric-top">Expenses this month <span class="metric-icon">↘</span></div><div class="metric-value" id="insExpense">Rs 0</div><div class="metric-foot">Total recorded spending</div></div>
+      <div class="metric"><div class="metric-top">Savings rate <span class="metric-icon">%</span></div><div class="metric-value" id="insRate">0%</div><div class="metric-foot">Savings divided by income</div></div>
+      <div class="metric"><div class="metric-top">Net worth <span class="metric-icon">◈</span></div><div class="metric-value" id="insWorth">Rs 0</div><div class="metric-foot">Assets less liabilities</div></div>
+    </div>
+    <div class="main-grid"><section class="panel"><div class="panel-head"><div><h2>Monthly summary</h2><p>Income, expenses and net savings by month</p></div></div><div class="table-wrap"><table><thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net savings</th><th>Rate</th></tr></thead><tbody id="insRows"></tbody></table></div></section>
+    <section class="panel"><div class="panel-head"><div><h2>Personal finance notes</h2><p>Generated from your recorded data</p></div></div><div id="insNotes" class="notice"></div></section></div>
+    <section class="panel"><div class="panel-head"><div><h2>Backup & privacy</h2></div></div><p class="notice">Your entries stay in this browser's local storage. They are not sent to a bank or server. Use Export CSV for a spreadsheet backup; use the backup file below to save or restore all entries. For use on both your laptop and iPad, export a backup on one device and import it on the other. Data does not automatically sync between devices.</p><div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="primary-btn" id="backupJson">Download full backup</button><label class="secondary-btn" for="restoreFile" style="display:inline-flex;align-items:center;cursor:pointer">Import backup</label><input type="file" id="restoreFile" accept="application/json,.json" hidden><button class="secondary-btn" id="clearData">Clear all data</button></div></section>
+  </section>
+</main>
+</div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const KEY = 'rupeewise-offline-v1';
+  const today = new Date();
+  const isoToday = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  let data = { transactions: [], assets: [] };
+  let editingTx = null, editingAsset = null;
+  const money = n => 'Rs ' + (Number(n)||0).toLocaleString('en-PK',{maximumFractionDigits:2,minimumFractionDigits:0});
+  const num = id => Number($(id).value) || 0;
+  const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const monthKey = d => String(d || '').slice(0,7);
+  const monthName = key => { const [y,m]=key.split('-').map(Number); return new Date(y,m-1,1).toLocaleDateString('en',{month:'short',year:'numeric'}); };
+  const currentMonth = () => `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}`;
+  function save(){ try { localStorage.setItem(KEY,JSON.stringify(data)); } catch(e){ toast('Could not save locally. Export a backup and check browser storage.'); } }
+  function load(){ try { const raw=localStorage.getItem(KEY); if(raw){const x=JSON.parse(raw); if(Array.isArray(x.transactions)&&Array.isArray(x.assets)) data=x;} } catch(e){} }
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast.timer); toast.timer=setTimeout(()=>t.classList.remove('show'),2600); }
+  function txForMonth(key){return data.transactions.filter(t=>monthKey(t.date)===key);}
+  function totals(list){return {income:list.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0),expense:list.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0)};}
+  function assetSums(){return {current:data.assets.reduce((s,a)=>s+a.current,0),cost:data.assets.reduce((s,a)=>s+a.cost,0)};}
+  function selectedMonth(){return $('monthFilter').value || currentMonth();}
+  function initMonths(){
+    const keys=new Set([currentMonth()]);
+    data.transactions.forEach(t=>keys.add(monthKey(t.date)));
+    for(let i=1;i<=11;i++){const d=new Date(today.getFullYear(),today.getMonth()-i,1);keys.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);}
+    const sel=$('monthFilter'); const old=sel.value;
+    sel.innerHTML=[...keys].filter(Boolean).sort().reverse().map(k=>`<option value="${k}">${escapeHtml(monthName(k))}</option>`).join('');
+    sel.value=keys.has(old)?old:currentMonth();
+  }
+  function showPage(name){
+    document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===`page-${name}`));
+    document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===name));
+    if(name==='transactions') renderTransactions();
+    if(name==='assets') renderAssets();
+    if(name==='insights') renderInsights();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  function rowTx(t, compact=false){
+    const icon=t.type==='income'?'↗':'↘';
+    const amount=(t.type==='income'?'+':'−')+money(t.amount);
+    if(compact) return `<tr><td><div class="item-cell"><span class="item-icon">${icon}</span><span>${escapeHtml(t.title)}</span></div></td><td>${escapeHtml(t.category)}</td><td>${escapeHtml(t.date)}</td><td class="${t.type==='income'?'positive':'negative'}">${amount}</td></tr>`;
+    return `<tr><td><div class="item-cell"><span class="item-icon">${icon}</span><span>${escapeHtml(t.title)}</span></div></td><td>${escapeHtml(t.category)}</td><td>${escapeHtml(t.date)}</td><td><span class="pill">${t.type}</span></td><td class="${t.type==='income'?'positive':'negative'}">${amount}</td><td><button class="text-btn" data-edit-tx="${t.id}">Edit</button> <button class="text-btn" data-delete-tx="${t.id}" style="color:var(--red)">Delete</button></td></tr>`;
+  }
+  function renderChart(){
+    const months=[]; for(let i=5;i>=0;i--){const d=new Date(today.getFullYear(),today.getMonth()-i,1);const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;months.push({key,label:d.toLocaleDateString('en',{month:'short'}),...totals(txForMonth(key))});}
+    const max=Math.max(1,...months.flatMap(m=>[m.income,m.expense]));
+    const W=520,H=170,top=10,bottom=28,usable=H-top-bottom, group=W/months.length, bw=18;
+    let svg=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart comparing monthly income and expenses">`;
+    for(let j=0;j<4;j++){const y=top+usable*j/3;svg+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="var(--border)" stroke-dasharray="3 4"/>`;}
+    months.forEach((m,i)=>{const cx=group*i+group/2;const h1=m.income/max*usable,h2=m.expense/max*usable;svg+=`<rect x="${cx-bw-2}" y="${top+usable-h1}" width="${bw}" height="${h1}" rx="4" fill="#246b57"><title>${m.label} income: ${money(m.income)}</title></rect><rect x="${cx+2}" y="${top+usable-h2}" width="${bw}" height="${h2}" rx="4" fill="#d9a45c"><title>${m.label} expenses: ${money(m.expense)}</title></rect><text x="${cx}" y="${H-7}" text-anchor="middle" fill="var(--muted)" font-size="11">${m.label}</text>`;});
+    svg+='</svg>'; $('cashChart').innerHTML=svg;
+  }
+  function renderBreakdown(list){
+    const expenses=list.filter(t=>t.type==='expense'); const sums={};
+    expenses.forEach(t=>sums[t.category]=(sums[t.category]||0)+t.amount);
+    const entries=Object.entries(sums).sort((a,b)=>b[1]-a[1]); const total=expenses.reduce((s,t)=>s+t.amount,0);
+    if(!entries.length){$('categoryBreakdown').innerHTML='<div class="empty">No expenses recorded for this month yet.</div>';return;}
+    $('categoryBreakdown').innerHTML=entries.slice(0,7).map(([cat,val])=>`<div style="margin:13px 0"><div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:7px"><span>${escapeHtml(cat)}</span><strong>${money(val)}</strong></div><div class="progress" style="margin:0;background:var(--surface-soft)"><div style="width:${total?val/total*100:0}%;background:#246b57"></div></div><div class="small-muted" style="margin-top:4px">${total?Math.round(val/total*100):0}% of expenses</div></div>`).join('');
+  }
+  function renderDashboard(){
+    const list=txForMonth(selectedMonth()), sums=totals(list), saveAmt=sums.income-sums.expense, rate=sums.income?saveAmt/sums.income*100:0, assets=assetSums();
+    $('incomeTotal').textContent=money(sums.income); $('expenseTotal').textContent=money(sums.expense); $('savingTotal').textContent=money(saveAmt);
+    $('savingTotal').style.color=saveAmt<0?'var(--red)':'var(--text)';
+    $('savingFoot').innerHTML=saveAmt<0?'<span class="negative">Spending exceeds income</span>':'<span class="positive">Income minus expenses</span>';
+    $('netWorth').textContent=money(assets.current); $('savingRate').textContent=`${rate.toFixed(1)}%`; $('savingAmount').textContent=money(saveAmt);
+    $('savingBar').style.width=`${Math.max(0,Math.min(100,rate))}%`;
+    $('savingMessage').textContent=sums.income? (rate>=20?'Good progress — you are keeping at least 20% of income.':rate>=0?'Try setting a small monthly savings target.':'Expenses are higher than income this month.'):'Add income and expenses to see your progress.';
+    const sorted=[...list].sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created).slice(0,5);
+    $('recentRows').innerHTML=sorted.length?sorted.map(t=>rowTx(t,true)).join(''):'<tr><td colspan="4" class="empty">No transactions yet. Add your first income or expense.</td></tr>';
+    renderChart();renderBreakdown(list);$('assetQuickValue').textContent=money(assets.current);
+  }
+  function openTxForm(id=null){
+    editingTx=id; const t=id?data.transactions.find(x=>x.id===id):null;
+    $('transactionForm').reset();$('txDate').value=t?.date||isoToday;$('txType').value=t?.type||'expense';$('txAmount').value=t?.amount??'';$('txTitle').value=t?.title||'';$('txCategory').value=t?.category||'Food';$('txNote').value=t?.note||'';
+    $('transactionFormTitle').textContent=t?'Edit transaction':'Add transaction';$('transactionFormPanel').hidden=false;$('transactionFormPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function renderTransactions(){
+    const filter=$('txFilter').value;const list=[...data.transactions].filter(t=>filter==='all'||t.type===filter).sort((a,b)=>b.date.localeCompare(a.date)||b.created-a.created);
+    $('txCount').textContent=`${list.length} entr${list.length===1?'y':'ies'}`;
+    $('allRows').innerHTML=list.length?list.map(t=>rowTx(t)).join(''):'<tr><td colspan="6" class="empty">Nothing here yet. Add a transaction to get started.</td></tr>';
+  }
+  function renderAssets(){
+    const sums=assetSums();$('assetTotal').textContent=money(sums.current);$('assetCost').textContent=money(sums.cost);$('assetChange').textContent=money(sums.current-sums.cost);$('assetChange').style.color=sums.current<sums.cost?'var(--red)':'var(--text)';$('assetCount').textContent=data.assets.length;
+    $('assetList').innerHTML=data.assets.length?data.assets.map(a=>`<div class="asset-card"><div class="asset-top"><div><div class="eyebrow">${escapeHtml(a.type)}</div><h2 style="margin-top:5px">${escapeHtml(a.name)}</h2></div><span class="item-icon">◈</span></div><div class="asset-value">${money(a.current)}</div><div class="small-muted">Purchase cost ${money(a.cost)} · <span class="${a.current>=a.cost?'positive':'negative'}">${a.current>=a.cost?'+':''}${money(a.current-a.cost)}</span></div>${a.qty?`<div class="small-muted" style="margin-top:8px">Quantity: ${escapeHtml(a.qty)} ${escapeHtml(a.unit)}</div>`:''}${a.note?`<div class="notice" style="margin-top:8px">${escapeHtml(a.note)}</div>`:''}<div class="asset-actions"><button class="secondary-btn" data-edit-asset="${a.id}">Edit</button><button class="secondary-btn" data-delete-asset="${a.id}" style="color:var(--red)">Delete</button></div></div>`).join(''):'<div class="empty" style="grid-column:1/-1">No assets yet. Add savings, gold, electronics, a vehicle, property or other things you own.</div>';
+    calcAsset();
+  }
+  function openAssetForm(id=null){
+    editingAsset=id;const a=id?data.assets.find(x=>x.id===id):null;$('assetForm').reset();
+    $('assetName').value=a?.name||'';$('assetType').value=a?.type||'Cash & savings';$('assetCostInput').value=a?.cost??'';$('assetCurrentInput').value=a?.current??'';$('assetQty').value=a?.qty||'';$('assetUnit').value=a?.unit||'';$('assetNote').value=a?.note||'';
+    $('assetFormTitle').textContent=a?'Edit asset':'Add an asset';$('assetFormPanel').hidden=false;$('assetFormPanel').scrollIntoView({behavior:'smooth',block:'start'});
+  }
+  function calcAsset(){
+    const qty=num('calcQty'), price=num('calcPrice'), fee=num('calcFee'), adj=num('calcAdjust');
+    const base=qty*price, adjusted=base*(1+adj/100), result=Math.max(0,adjusted-fee);
+    $('calcResult').textContent=money(result);$('calcDetail').textContent=`${qty.toLocaleString()} × ${money(price)} = ${money(base)} · adjustment ${adj}% · costs ${money(fee)}`;
+  }
+  function renderInsights(){
+    const key=selectedMonth(), list=txForMonth(key),s=totals(list),sav=s.income-s.expense,rate=s.income?sav/s.income*100:0,assets=assetSums();
+    $('insIncome').textContent=money(s.income);$('insExpense').textContent=money(s.expense);$('insRate').textContent=`${rate.toFixed(1)}%`;$('insWorth').textContent=money(assets.current);
+    const keys=new Set([key]);data.transactions.forEach(t=>keys.add(monthKey(t.date)));
+    const rows=[...keys].sort().reverse().slice(0,12);
+    $('insRows').innerHTML=rows.map(k=>{const x=totals(txForMonth(k)),sv=x.income-x.expense;return `<tr><td>${escapeHtml(monthName(k))}</td><td>${money(x.income)}</td><td>${money(x.expense)}</td><td class="${sv<0?'negative':'positive'}">${money(sv)}</td><td>${x.income?(sv/x.income*100).toFixed(1):'0.0'}%</td></tr>`;}).join('');
+    const expenses=list.filter(t=>t.type==='expense');const cats={};expenses.forEach(t=>cats[t.category]=(cats[t.category]||0)+t.amount);
+    const top=Object.entries(cats).sort((a,b)=>b[1]-a[1])[0];
+    $('insNotes').innerHTML=`<p><strong>Selected month:</strong> ${escapeHtml(monthName(key))}</p><p>${s.income?`You saved ${rate.toFixed(1)}% of recorded income this month.`:'Add income to calculate a savings rate.'}</p><p>${top?`Your largest expense category is <strong>${escapeHtml(top[0])}</strong> at ${money(top[1])}.`:'Record expenses to see your biggest spending category.'}</p><p>Your current tracked asset value is <strong>${money(assets.current)}</strong>. This is an estimate based on the values you entered, not a market valuation.</p><p>Net savings means income minus recorded expenses. It is not automatically added to your assets; update your cash or savings asset yourself to avoid double-counting.</p>`;
+  }
+  function download(name,content,type='text/plain'){
+    const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function csvEscape(v){const s=String(v??'');return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+  function exportTransactions(){const rows=[['Date','Type','Description','Category','Amount PKR','Note'],...data.transactions.map(t=>[t.date,t.type,t.title,t.category,t.amount,t.note||''])];download('rupeewise-transactions.csv',rows.map(r=>r.map(csvEscape).join(',')).join('\r\n'),'text/csv;charset=utf-8;');}
+  function exportAssets(){const rows=[['Name','Category','Purchase Cost PKR','Current Value PKR','Quantity','Unit','Notes'],...data.assets.map(a=>[a.name,a.type,a.cost,a.current,a.qty,a.unit,a.note])];download('rupeewise-assets.csv',rows.map(r=>r.map(csvEscape).join(',')).join('\r\n'),'text/csv;charset=utf-8;');}
+  document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+  document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.goto)));
+  $('monthFilter').addEventListener('change',()=>{renderDashboard();if($('page-insights').classList.contains('active'))renderInsights();});
+  $('quickAdd').addEventListener('click',()=>{showPage('transactions');openTxForm();});
+  $('newTransaction').addEventListener('click',()=>openTxForm());
+  $('closeTransaction').addEventListener('click',()=>{$('transactionFormPanel').hidden=true;});
+  $('cancelTransaction').addEventListener('click',()=>{$('transactionFormPanel').hidden=true;});
+  $('transactionForm').addEventListener('submit',e=>{
+    e.preventDefault();const amount=num('txAmount');if(amount<=0){toast('Enter an amount greater than zero.');return;}
+    const tx={id:editingTx||`${Date.now()}-${Math.random().toString(36).slice(2,7)}`,type:$('txType').value,amount,title:$('txTitle').value.trim(),category:$('txCategory').value,date:$('txDate').value,note:$('txNote').value.trim(),created:Date.now()};
+    if(!tx.title||!tx.date)return;
+    if(editingTx){const i=data.transactions.findIndex(x=>x.id===editingTx);if(i>=0)tx.created=data.transactions[i].created;data.transactions=data.transactions.map(x=>x.id===editingTx?tx:x);}else data.transactions.push(tx);
+    save();initMonths();$('transactionFormPanel').hidden=true;renderDashboard();renderTransactions();toast(editingTx?'Transaction updated.':'Transaction saved.');
+  });
+  $('allRows').addEventListener('click',e=>{
+    const edit=e.target.closest('[data-edit-tx]'),del=e.target.closest('[data-delete-tx]');
+    if(edit)openTxForm(edit.dataset.editTx);
+    if(del&&confirm('Delete this transaction?')){data.transactions=data.transactions.filter(t=>t.id!==del.dataset.deleteTx);save();initMonths();renderAll();toast('Transaction deleted.');}
+  });
+  $('txFilter').addEventListener('change',renderTransactions);
+  $('exportCsv').addEventListener('click',exportTransactions);
+  $('newAsset').addEventListener('click',()=>openAssetForm());
+  $('closeAsset').addEventListener('click',()=>$('assetFormPanel').hidden=true);
+  $('cancelAsset').addEventListener('click',()=>$('assetFormPanel').hidden=true);
+  $('assetForm').addEventListener('submit',e=>{
+    e.preventDefault();const cost=num('assetCostInput'),current=num('assetCurrentInput');
+    if(cost<0||current<0){toast('Asset values cannot be negative.');return;}
+    const a={id:editingAsset||`${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name:$('assetName').value.trim(),type:$('assetType').value,cost,current,qty:$('assetQty').value,unit:$('assetUnit').value.trim(),note:$('assetNote').value.trim()};
+    if(!a.name)return;
+    if(editingAsset)data.assets=data.assets.map(x=>x.id===editingAsset?a:x);else data.assets.push(a);
+    save();$('assetFormPanel').hidden=true;renderAll();renderAssets();toast(editingAsset?'Asset updated.':'Asset saved.');
+  });
+  $('assetList').addEventListener('click',e=>{
+    const edit=e.target.closest('[data-edit-asset]'),del=e.target.closest('[data-delete-asset]');
+    if(edit)openAssetForm(edit.dataset.editAsset);
+    if(del&&confirm('Delete this asset?')){data.assets=data.assets.filter(a=>a.id!==del.dataset.deleteAsset);save();renderAll();renderAssets();toast('Asset deleted.');}
+  });
+  ['calcQty','calcPrice','calcFee','calcAdjust'].forEach(id=>$(id).addEventListener('input',calcAsset));
+  $('exportAssets').addEventListener('click',exportAssets);
+  $('backupJson').addEventListener('click',()=>download('rupeewise-backup.json',JSON.stringify({version:1,exportedAt:new Date().toISOString(),...data},null,2),'application/json'));
+  $('restoreFile').addEventListener('change',async e=>{
+    const file=e.target.files[0];if(!file)return;
+    try{const x=JSON.parse(await file.text());if(!Array.isArray(x.transactions)||!Array.isArray(x.assets))throw new Error('Invalid backup');if(confirm('Import this backup and replace the data currently in this browser?')){data={transactions:x.transactions,assets:x.assets};save();initMonths();renderAll();toast('Backup restored.');}}
+    catch(err){toast('This backup file is not valid.');}finally{e.target.value='';}
+  });
+  $('clearData').addEventListener('click',()=>{if(confirm('Permanently clear all transactions and assets saved in this browser? Export a backup first if you may need them.')){data={transactions:[],assets:[]};save();initMonths();renderAll();toast('Local data cleared.');}});
+  function renderAll(){renderDashboard();renderTransactions();renderAssets();renderInsights();}
+  load();$('todayLabel').textContent=today.toLocaleDateString('en-PK',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();$('txDate').value=isoToday;initMonths();renderAll();
+})();
+</script>
+</body>
+</html>
